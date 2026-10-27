@@ -1,0 +1,11 @@
+node_modules/
+dist/
+deploy/
+storage/
+logs/
+.env
+.env.local
+models/*.onnx
+models/*.task
+*.tsbuildinfo
+.tmp-dist/

@@ -1,0 +1,7 @@
+node_modules/
+dist/
+deploy/
+.tanstack/
+.env
+.env.local
+*.tsbuildinfo

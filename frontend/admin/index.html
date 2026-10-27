@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="id" class="h-full antialiased">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="application-name" content="ABiTA" />
+    <meta name="description" content="Kelola kehadiran, pengajuan, dan jadwal tenaga kerja RSAB Botania" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/svg+xml" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/apple-icon.png" />
+    <!-- Instalasi ke layar utama (standalone); tanpa service worker -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#F6F7F9" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0D1117" media="(prefers-color-scheme: dark)" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="ABiTA Admin" />
+    <title>ABiTA · RS Awal Bros Botania</title>
+    <script>
+      // tema sebelum render agar tidak berkedip terang -> gelap (kunci sama dengan src/lib/theme-boot.ts)
+      try {
+        var t = localStorage.getItem("presensi.theme");
+        if (t === "light" || t === "dark") document.documentElement.setAttribute("data-theme", t);
+      } catch (e) {}
+    </script>
+  </head>
+  <body class="min-h-full font-sans">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

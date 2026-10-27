@@ -1,0 +1,7 @@
+# Source files use LF line endings on every platform
+* text=auto eol=lf
+*.cmd text eol=crlf
+*.png binary
+*.jpg binary
+*.pptx binary
+*.onnx binary

@@ -1,0 +1,47 @@
+{
+  "name": "abita-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "ABiTA frontend: satu server di :3000 untuk /admin (dasbor) dan /staff (PWA karyawan), meneruskan /api ke backend",
+  "engines": {
+    "node": ">=20.19"
+  },
+  "scripts": {
+    "dev": "node server.mjs",
+    "build": "npm run typecheck && vite build -c admin/vite.config.ts && vite build -c staff/vite.config.ts",
+    "start": "node server.mjs --prod",
+    "typecheck": "tsc -p admin && tsc -p staff",
+    "lint": "eslint admin/src staff/src",
+    "icons": "node brand/build-icons.mjs",
+    "build:cpanel": "node scripts/build-cpanel.mjs"
+  },
+  "dependencies": {
+    "@fontsource-variable/inter": "^5.3.0",
+    "@mediapipe/tasks-vision": "^1.1.1",
+    "@tanstack/react-query": "^5.104.2",
+    "@tanstack/react-router": "^1.170.44",
+    "lucide-react": "^1.57.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/router-plugin": "^1.168.46",
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "eslint": "^9.39.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^14.0.0",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.71.2",
+    "vite": "^8.3.4",
+    "vite-plugin-pwa": "^2.0.0",
+    "zod": "^4.6.7"
+  }
+}
