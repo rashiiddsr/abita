@@ -25,6 +25,10 @@ fs.rmSync(OUT, { recursive: true, force: true });
 const web = path.join(OUT, "public_html");
 fs.cpSync(path.join(ROOT, "dist/admin"), path.join(web, "admin"), { recursive: true });
 fs.cpSync(path.join(ROOT, "dist/staff"), path.join(web, "staff"), { recursive: true });
+// ikon di root domain: Safari (bookmark, Favorit, Tambah ke Layar Utama) mencari /apple-touch-icon.png & /favicon.ico di sini;
+// bila tidak ada, iPhone menampilkan huruf pertama judul sebagai ikon
+for (const name of ["apple-touch-icon.png", "apple-touch-icon-precomposed.png"]) fs.copyFileSync(path.join(ROOT, "dist/staff/icons/apple-touch-icon.png"), path.join(web, name));
+fs.copyFileSync(path.join(ROOT, "dist/staff/favicon.ico"), path.join(web, "favicon.ico"));
 
 fs.writeFileSync(
   path.join(web, ".htaccess"),
@@ -77,10 +81,15 @@ Header set Cache-Control "no-cache"
 <FilesMatch "-[A-Za-z0-9_-]{8,}\\.(js|css|woff2|png|svg|wasm)$">
 Header set Cache-Control "public, max-age=31536000, immutable"
 </FilesMatch>
+# mesin pemindai wajah (MediaPipe, ~17 MB): disimpan browser 7 hari; service worker menyimpannya permanen
+<FilesMatch "\\.(wasm|task)$">
+Header set Cache-Control "public, max-age=604800"
+</FilesMatch>
 </IfModule>
 
 <IfModule mod_deflate.c>
-AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml
+# wasm pemindai wajah 13,5 MB menjadi sekitar 4 MB saat dikompresi
+AddOutputFilterByType DEFLATE text/html text/css text/javascript application/javascript application/json application/manifest+json image/svg+xml application/wasm
 </IfModule>
 `,
 );

@@ -13,6 +13,9 @@ const FINAL = new Set(["ALREADY_CHECKED_IN", "ALREADY_CHECKED_OUT", "ALREADY_ENR
 
 export function useVerifier(purpose: Purpose, meta: () => Record<string, unknown>) {
   const engine = useRef<FaceEngine | null>(null);
+  // kamera yang sedang dinyalakan (model belum siap); dibuang bila halaman ditutup lebih dulu
+  const pending = useRef<{ e: FaceEngine; done: Promise<boolean> } | null>(null);
+  const [video, setVideo] = useState<HTMLVideoElement | null>(null);
   const [stage, setStage] = useState<Stage>("starting");
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [frame, setFrame] = useState<FrameInfo>(NO_FACE);
@@ -92,24 +95,36 @@ export function useVerifier(purpose: Purpose, meta: () => Record<string, unknown
     [failWith, submit],
   );
 
-  const openCamera = useCallback(async () => {
-    if (engine.current) return true;
+  const openCamera = useCallback((): Promise<boolean> => {
+    if (engine.current) return Promise.resolve(true);
+    if (pending.current) return pending.current.done;
     set("starting");
     setCameraError(null);
     const e = new FaceEngine();
     e.onFrame = onFrame;
-    try {
-      await e.start();
-      engine.current = e;
-      set("idle");
-      return true;
-    } catch (err) {
-      e.stop();
-      const message = err instanceof Error ? err.message : String(err);
-      setCameraError(message);
-      failWith(message);
-      return false;
-    }
+    const live = () => pending.current?.e === e;
+    const done = (async () => {
+      try {
+        // gambar kamera langsung tampil; tombol menunggu sampai pemindai wajah siap
+        await e.start(() => live() && setVideo(e.video));
+        if (!live()) return false;
+        engine.current = e;
+        set("idle");
+        return true;
+      } catch (err) {
+        e.stop();
+        if (!live()) return false;
+        setVideo(null);
+        const message = err instanceof Error ? err.message : String(err);
+        setCameraError(message);
+        failWith(message);
+        return false;
+      } finally {
+        if (live()) pending.current = null;
+      }
+    })();
+    pending.current = { e, done };
+    return done;
   }, [onFrame, failWith]);
 
   /** Satu percobaan = satu sesi baru dari server (gerakan acak baru). */
@@ -152,12 +167,14 @@ export function useVerifier(purpose: Purpose, meta: () => Record<string, unknown
     void openCamera();
     return () => {
       engine.current?.stop();
+      pending.current?.e.stop();
       engine.current = null;
+      pending.current = null;
     };
   }, [openCamera]);
 
   return {
-    video: engine.current?.video ?? null,
+    video,
     stage,
     cameraError,
     frame,

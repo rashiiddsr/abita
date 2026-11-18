@@ -96,7 +96,9 @@ export function FaceCamera({ v, className }: { v: V; className?: string }) {
     if (el && v.video && v.video.parentElement !== el) el.appendChild(v.video);
   }, [v.video]);
   const running = v.stage === "running";
-  const busy = v.stage === "starting" || v.stage === "preparing" || v.stage === "submitting";
+  // kamera sudah tampil tapi pemindai wajah masih dimuat: cukup label kecil, wajah tetap terlihat
+  const warming = v.stage === "starting" && !!v.video;
+  const busy = (v.stage === "starting" && !warming) || v.stage === "preparing" || v.stage === "submitting";
   const tone = running && v.hint ? "#FBBF24" : "#5FE3EE";
   return (
     <div className={cx("relative overflow-hidden rounded-[22px] bg-[radial-gradient(circle,#1C2B36,#0B1418)]", className)}>
@@ -139,6 +141,11 @@ export function FaceCamera({ v, className }: { v: V; className?: string }) {
             <span className="block h-full rounded-full bg-white transition-[width] duration-200" style={{ width: `${Math.round((v.remaining / 10_000) * 100)}%` }} />
           </span>
         </div>
+      )}
+      {warming && (
+        <span className="absolute inset-x-0 bottom-3 mx-auto flex w-fit items-center gap-2 rounded-full bg-black/55 px-3.5 py-1.5 text-[13px] font-semibold text-white">
+          <Loader2 size={14} className="animate-spin" /> Menyiapkan pemindai wajah…
+        </span>
       )}
       {busy && (
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-black/45 text-white">

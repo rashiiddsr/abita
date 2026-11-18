@@ -36,7 +36,7 @@ export default defineConfig(({ mode }) => {
       VitePWA({
         registerType: "autoUpdate",
         injectRegister: "auto",
-        includeAssets: ["abita-mark.svg", "icons/*.png", "manifest.webmanifest"],
+        includeAssets: ["favicon.ico", "abita-mark.svg", "icons/*.png", "manifest.webmanifest"],
         // manifest statis di public/manifest.webmanifest (ditautkan di index.html) agar ikut tersaji saat dev;
         // tanpa manifest, iPhone memasang ikon sebagai halaman Safari biasa (bar browser, mulai dari halaman saat dipasang)
         manifest: false,

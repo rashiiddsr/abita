@@ -29,6 +29,16 @@ function loadLandmarker(): Promise<FaceLandmarker> {
   return landmarker;
 }
 
+/**
+ * Unduh & siapkan mesin pemindai di latar (mis. dari Beranda) agar tombol presensi langsung siap.
+ * Dilewati saat Hemat Data aktif; aman dipanggil berkali-kali (satu instance bersama).
+ */
+export function preloadFaceEngine() {
+  const conn = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  if (conn?.saveData) return;
+  void loadLandmarker().catch(() => undefined);
+}
+
 /** Indeks 478-landmark: 1 = ujung hidung, 33 & 263 = sudut luar mata. */
 function analyze(res: FaceLandmarkerResult): FrameInfo {
   const all = res.faceLandmarks;
@@ -75,6 +85,7 @@ export class FaceEngine {
   private probe = document.createElement("canvas");
   private frames = 0;
   private bright: number | null = null;
+  private stopped = false;
   onFrame: ((info: FrameInfo) => void) | null = null;
 
   constructor() {
@@ -86,7 +97,8 @@ export class FaceEngine {
     this.video = v;
   }
 
-  async start() {
+  /** `onCamera` dipanggil begitu gambar kamera tampil, sebelum model selesai dimuat. */
+  async start(onCamera?: () => void) {
     if (!window.isSecureContext) throw new Error("Kamera butuh koneksi aman (HTTPS) atau localhost.");
     if (!navigator.mediaDevices?.getUserMedia) throw new Error("Perangkat ini tidak mendukung kamera di browser.");
     const lm = loadLandmarker();
@@ -96,10 +108,14 @@ export class FaceEngine {
       const name = (e as DOMException)?.name;
       throw new Error(name === "NotAllowedError" ? "Izin kamera ditolak. Izinkan kamera untuk situs ini di pengaturan browser." : "Kamera tidak bisa dibuka. Tutup aplikasi lain yang memakai kamera lalu coba lagi.");
     }
+    if (this.stopped) return this.stop();
     this.video.srcObject = this.stream;
     await this.video.play().catch(() => undefined);
     if (this.video.readyState < 2) await new Promise((r) => this.video.addEventListener("loadeddata", r, { once: true }));
+    if (this.stopped) return;
+    onCamera?.();
     const model = await lm;
+    if (this.stopped) return;
     const loop = () => {
       const v = this.video;
       if (v.readyState >= 2 && v.currentTime !== this.lastTime) {
@@ -146,6 +162,7 @@ export class FaceEngine {
   }
 
   stop() {
+    this.stopped = true;
     cancelAnimationFrame(this.raf);
     this.onFrame = null;
     this.stream?.getTracks().forEach((t) => t.stop());

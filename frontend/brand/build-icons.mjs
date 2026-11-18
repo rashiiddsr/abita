@@ -20,6 +20,17 @@ const maskable = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0
   </g>
 </svg>`);
 
+// Ikon iPhone/iPad (apple-touch-icon): persegi penuh tanpa transparansi; iOS sendiri yang membulatkan sudutnya.
+// Ikon transparan atau tidak ditemukan membuat Safari menampilkan huruf pertama judul ("A") sebagai ikon.
+const touch = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12A3B0"/><stop offset="1" stop-color="#005A64"/></linearGradient></defs>
+  <rect width="64" height="64" fill="url(#g)"/>
+  <g transform="translate(32 32) scale(.8) translate(-32 -32)">
+    <path d="M18.5 47 L32 16.5 L45.5 47" fill="none" stroke="#FFFFFF" stroke-width="6.5" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="32" cy="37.5" r="4.4" fill="#FF5C61"/>
+  </g>
+</svg>`);
+
 const png = (svg, size) => sharp(svg, { density: Math.max(72, (size / 64) * 72 * 2) }).resize(size, size).png().toBuffer();
 async function out(path, svg, size) {
   mkdirSync(dirname(path), { recursive: true });
@@ -51,7 +62,7 @@ async function ico(path, sizes) {
 
 console.log("Dasbor (admin/public)");
 copyFileSync(join(here, "abita-mark.svg"), join(root, "admin/public/icon.svg"));
-await out(join(root, "admin/public/apple-icon.png"), mark, 180);
+await out(join(root, "admin/public/apple-icon.png"), touch, 180);
 await ico(join(root, "admin/public/favicon.ico"), [16, 32, 48]);
 await out(join(root, "admin/public/icons/Icon-192.png"), mark, 192);
 await out(join(root, "admin/public/icons/Icon-512.png"), mark, 512);
@@ -60,6 +71,8 @@ await out(join(root, "admin/public/icons/Icon-maskable-512.png"), maskable, 512)
 
 console.log("Aplikasi karyawan (staff/public)");
 copyFileSync(join(here, "abita-mark.svg"), join(root, "staff/public/abita-mark.svg"));
+await out(join(root, "staff/public/icons/apple-touch-icon.png"), touch, 180);
+await ico(join(root, "staff/public/favicon.ico"), [16, 32, 48]);
 await out(join(root, "staff/public/icons/Icon-192.png"), mark, 192);
 await out(join(root, "staff/public/icons/Icon-512.png"), mark, 512);
 await out(join(root, "staff/public/icons/Icon-maskable-192.png"), maskable, 192);

@@ -7,6 +7,7 @@ import { GradientHeader } from "../components/shell";
 import { Avatar, Card, DateBadge, IconTile, Pill, PrimaryButton, Skel } from "../components/ui";
 import { api, fileUrl } from "../lib/api";
 import { attendanceGate } from "../lib/attendance-gate";
+import { preloadFaceEngine } from "../lib/face/engine";
 import { addDays, firstNames, fmtDateLong, fmtDayShort, fmtDistance, fmtMonth, fmtTime, greeting, hm, isoMonth, nowClock, todayWib } from "../lib/format";
 import { diffFromShift, diffLabel, inTimeColor, outTimeColor } from "../lib/time-tone";
 import { isFresh, useLocation } from "../lib/location";
@@ -111,6 +112,13 @@ function TodayCard({ me }: { me: Me }) {
   // Check in / check out hanya di dalam jendela waktu shift (lihat lib/attendance-gate.ts).
   // Di luar jendela / selesai / tanpa jadwal: tombol tetap ada tetapi tidak bisa ditekan, dengan keterangan.
   const gate = attendanceGate(t, now);
+  // jendela absen terbuka: siapkan pemindai wajah di latar supaya kamera langsung siap saat tombol ditekan
+  const warm = gate.can && me.face_enrolled;
+  useEffect(() => {
+    if (!warm) return;
+    const ric = window.requestIdleCallback ?? ((cb: () => void) => window.setTimeout(cb, 1500));
+    ric(() => preloadFaceEngine());
+  }, [warm]);
   const sh = t.shift?.shift;
   const inDiff = sh ? diffFromShift(t.check_in, t.work_date, sh.start_time, sh.end_time, "start") : null;
   const outDiff = sh ? diffFromShift(t.check_out, t.work_date, sh.start_time, sh.end_time, "end") : null;
